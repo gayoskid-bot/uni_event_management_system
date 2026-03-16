@@ -1,5 +1,8 @@
-import { auth } from "@/server/auth"
+import NextAuth from "next-auth"
+import authConfig from "@/server/auth.config"
 import { NextResponse } from "next/server"
+
+const { auth } = NextAuth(authConfig)
 
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"]
 const authRoutes = ["/login", "/register"]
