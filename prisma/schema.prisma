@@ -1,0 +1,491 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ========================
+// AUTH.JS REQUIRED MODELS
+// ========================
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String    @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  bio            String?
+  department     String?
+  year           Int?
+  phone          String?
+  role           Role      @default(STUDENT)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  organizedEvents   Event[]            @relation("EventOrganizer")
+  coOrganizedEvents EventCoOrganizer[]
+  registrations     Registration[]
+  bookmarks         Bookmark[]
+  likes             EventLike[]
+  comments          Comment[]
+  reviews           Review[]
+  notifications     Notification[]
+  following         Follow[]           @relation("Follower")
+  followers         Follow[]           @relation("Following")
+  interests         UserInterest[]
+  checkIns          CheckIn[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ========================
+// ENUMS
+// ========================
+
+enum Role {
+  STUDENT
+  ORGANIZER
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum RegistrationStatus {
+  CONFIRMED
+  WAITLISTED
+  CANCELLED
+  CHECKED_IN
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
+}
+
+enum NotificationType {
+  EVENT_REMINDER
+  REGISTRATION_CONFIRMED
+  WAITLIST_PROMOTED
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  NEW_COMMENT
+  NEW_FOLLOWER
+  ORGANIZER_ANNOUNCEMENT
+  REVIEW_RECEIVED
+  SYSTEM
+}
+
+// ========================
+// CORE PLATFORM MODELS
+// ========================
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  description String      @db.Text
+  summary     String?     @db.VarChar(300)
+  coverImage  String?
+  status      EventStatus @default(DRAFT)
+
+  startDate DateTime
+  endDate   DateTime
+  timezone  String   @default("UTC")
+
+  venue     String?
+  address   String?
+  latitude  Float?
+  longitude Float?
+  isOnline  Boolean @default(false)
+  onlineLink String?
+
+  capacity        Int?
+  waitlistEnabled Boolean @default(false)
+
+  isFree Boolean @default(true)
+
+  seriesId String?
+  series   EventSeries? @relation(fields: [seriesId], references: [id])
+
+  organizerId String
+  organizer   User   @relation("EventOrganizer", fields: [organizerId], references: [id])
+
+  viewCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  coOrganizers  EventCoOrganizer[]
+  categories    EventCategory[]
+  tags          EventTag[]
+  ticketTiers   TicketTier[]
+  registrations Registration[]
+  bookmarks     Bookmark[]
+  likes         EventLike[]
+  comments      Comment[]
+  reviews       Review[]
+  images        EventImage[]
+  announcements Announcement[]
+  checkIns      CheckIn[]
+
+  @@index([slug])
+  @@index([status, startDate])
+  @@index([organizerId])
+  @@index([startDate])
+  @@index([seriesId])
+}
+
+model EventSeries {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  recurrenceRule String?
+  createdAt      DateTime @default(now())
+  events         Event[]
+}
+
+model EventCoOrganizer {
+  id      String @id @default(cuid())
+  eventId String
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Category {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  slug        String          @unique
+  description String?
+  icon        String?
+  color       String?
+  sortOrder   Int             @default(0)
+  events      EventCategory[]
+  interests   UserInterest[]
+}
+
+model EventCategory {
+  eventId    String
+  categoryId String
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, categoryId])
+}
+
+model Tag {
+  id     String     @id @default(cuid())
+  name   String     @unique
+  slug   String     @unique
+  events EventTag[]
+}
+
+model EventTag {
+  eventId String
+  tagId   String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, tagId])
+}
+
+model EventImage {
+  id      String @id @default(cuid())
+  eventId String
+  url     String
+  alt     String?
+  order   Int    @default(0)
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model TicketTier {
+  id          String    @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  price       Int       @default(0)
+  currency    String    @default("USD")
+  quantity    Int?
+  soldCount   Int       @default(0)
+  salesStart  DateTime?
+  salesEnd    DateTime?
+  sortOrder   Int       @default(0)
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  registrations Registration[]
+
+  @@index([eventId])
+}
+
+// ========================
+// REGISTRATION & TICKETS
+// ========================
+
+model Registration {
+  id               String             @id @default(cuid())
+  eventId          String
+  userId           String
+  ticketTierId     String?
+  status           RegistrationStatus @default(CONFIRMED)
+  qrCode           String?            @unique
+  registeredAt     DateTime           @default(now())
+  cancelledAt      DateTime?
+  waitlistPosition Int?
+
+  event      Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticketTier TicketTier? @relation(fields: [ticketTierId], references: [id])
+  payment    Payment?
+  checkIn    CheckIn?
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@index([userId])
+  @@index([qrCode])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  registrationId  String        @unique
+  stripeSessionId String?       @unique
+  stripePaymentId String?
+  amount          Int
+  currency        String        @default("USD")
+  status          PaymentStatus @default(PENDING)
+  refundedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSessionId])
+}
+
+model CheckIn {
+  id             String   @id @default(cuid())
+  registrationId String   @unique
+  eventId        String
+  userId         String
+  checkedInAt    DateTime @default(now())
+  checkedInBy    String?
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+// ========================
+// SOCIAL FEATURES
+// ========================
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+
+model EventLike {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  userId    String
+  eventId   String
+  parentId  String?
+  isEdited  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([eventId, createdAt])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  content   String?  @db.Text
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+// ========================
+// NOTIFICATIONS
+// ========================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+model NotificationPreference {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  emailReminders    Boolean @default(true)
+  emailRegistration Boolean @default(true)
+  emailUpdates      Boolean @default(true)
+  pushEnabled       Boolean @default(false)
+  inAppEnabled      Boolean @default(true)
+}
+
+// ========================
+// ANNOUNCEMENTS
+// ========================
+
+model Announcement {
+  id        String   @id @default(cuid())
+  eventId   String
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+// ========================
+// USER INTERESTS
+// ========================
+
+model UserInterest {
+  userId     String
+  categoryId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([userId, categoryId])
+}
+
+// ========================
+// ADMIN
+// ========================
+
+model OrganizerApplication {
+  id           String    @id @default(cuid())
+  userId       String
+  reason       String    @db.Text
+  organization String?
+  status       String    @default("PENDING")
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([status])
+}
+
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String
+  targetType String
+  targetId   String
+  reason     String    @db.Text
+  status     String    @default("PENDING")
+  resolvedBy String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([status])
+  @@index([targetType, targetId])
+}
