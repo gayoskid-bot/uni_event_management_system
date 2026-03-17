@@ -12,4 +12,20 @@ export default {
     signIn: "/login",
     error: "/login",
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      // When user first signs in, store role in token
+      if (user) {
+        token.role = (user as Record<string, unknown>).role
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub
+        session.user.role = token.role as string
+      }
+      return session
+    },
+  },
 } satisfies NextAuthConfig

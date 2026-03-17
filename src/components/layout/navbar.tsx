@@ -15,6 +15,8 @@ import {
   User,
   Settings,
   Bookmark,
+  Shield,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -43,6 +45,7 @@ export function Navbar({ user }: NavbarProps) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   const isOrganizer = user?.role === "ORGANIZER" || user?.role === "ADMIN"
+  const isAdmin = user?.role === "ADMIN"
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -121,6 +124,14 @@ export function Navbar({ user }: NavbarProps) {
                         <p className="text-xs text-muted-foreground">{user.email}</p>
                       </div>
                       <Link
+                        href="/my-dashboard"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
+                      >
+                        <Home className="h-4 w-4" />
+                        My Dashboard
+                      </Link>
+                      <Link
                         href="/profile"
                         onClick={() => setProfileMenuOpen(false)}
                         className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
@@ -138,12 +149,22 @@ export function Navbar({ user }: NavbarProps) {
                       </Link>
                       {isOrganizer && (
                         <Link
-                          href="/dashboard"
+                          href="/dashboard/events"
                           onClick={() => setProfileMenuOpen(false)}
                           className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
                         >
                           <LayoutDashboard className="h-4 w-4" />
-                          Dashboard
+                          Organizer Dashboard
+                        </Link>
+                      )}
+                      {isAdmin && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setProfileMenuOpen(false)}
+                          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                          <Shield className="h-4 w-4" />
+                          Admin Panel
                         </Link>
                       )}
                       <Link

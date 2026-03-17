@@ -1,7 +1,13 @@
 import { PrismaClient } from "@prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 import bcrypt from "bcryptjs"
 
-const prisma = new PrismaClient()
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/uni_events",
+})
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 const categories = [
   { name: "Academic", slug: "academic", icon: "GraduationCap", color: "#3B82F6", sortOrder: 1 },
@@ -90,6 +96,7 @@ async function main() {
     {
       title: "AI & Machine Learning Workshop",
       slug: "ai-ml-workshop",
+      coverImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop",
       description:
         "<p>Join us for a hands-on workshop on Artificial Intelligence and Machine Learning. This event is perfect for beginners and intermediate learners who want to explore the fundamentals of AI/ML.</p><h3>What you'll learn:</h3><ul><li>Introduction to Neural Networks</li><li>Hands-on with Python and TensorFlow</li><li>Building your first ML model</li><li>Best practices and career paths</li></ul><p>Bring your laptop with Python installed!</p>",
       summary: "Hands-on workshop on AI/ML fundamentals with Python and TensorFlow",
@@ -106,6 +113,7 @@ async function main() {
     {
       title: "Annual Spring Cultural Festival",
       slug: "spring-cultural-festival",
+      coverImage: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=400&fit=crop",
       description:
         "<p>Experience the vibrant diversity of our campus at the Annual Spring Cultural Festival! Enjoy performances, food, music, and art from cultures around the world.</p><h3>Highlights:</h3><ul><li>Live performances from 15+ cultural groups</li><li>International food fair</li><li>Art exhibition</li><li>Interactive cultural workshops</li></ul>",
       summary: "A celebration of campus diversity with performances, food, and art",
@@ -122,6 +130,7 @@ async function main() {
     {
       title: "Career Fair 2026",
       slug: "career-fair-2026",
+      coverImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=400&fit=crop",
       description:
         "<p>Connect with top employers at our annual Career Fair. Over 100 companies will be on campus looking to hire talented students for internships and full-time positions.</p><h3>Participating Companies:</h3><ul><li>Tech giants and startups</li><li>Financial institutions</li><li>Healthcare organizations</li><li>Government agencies</li></ul><p>Bring your resume and dress professionally!</p>",
       summary: "Connect with 100+ employers for internships and full-time positions",
@@ -138,6 +147,7 @@ async function main() {
     {
       title: "Intramural Basketball Tournament",
       slug: "basketball-tournament",
+      coverImage: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=400&fit=crop",
       description:
         "<p>Sign up your team for the Intramural Basketball Tournament! Compete against other teams for the championship trophy and bragging rights.</p><h3>Details:</h3><ul><li>5v5 format</li><li>Double elimination bracket</li><li>Awards ceremony after finals</li></ul>",
       summary: "5v5 basketball tournament with double elimination bracket",
@@ -154,6 +164,7 @@ async function main() {
     {
       title: "Introduction to Web Development",
       slug: "intro-web-dev",
+      coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop",
       description:
         "<p>Learn the basics of web development in this beginner-friendly seminar. Perfect for students from any major who want to build their first website.</p><h3>Topics covered:</h3><ul><li>HTML & CSS basics</li><li>JavaScript fundamentals</li><li>Building responsive layouts</li><li>Deploying your first site</li></ul>",
       summary: "Beginner-friendly seminar on HTML, CSS, and JavaScript",
@@ -170,6 +181,7 @@ async function main() {
     {
       title: "Mental Health Awareness Week Kickoff",
       slug: "mental-health-awareness",
+      coverImage: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&h=400&fit=crop",
       description:
         "<p>Join us for the kickoff event of Mental Health Awareness Week. Learn about resources available on campus, hear from guest speakers, and participate in mindfulness activities.</p>",
       summary: "Resources, speakers, and mindfulness activities for mental health awareness",

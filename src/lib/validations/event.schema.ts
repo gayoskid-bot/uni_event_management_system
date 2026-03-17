@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const createEventSchema = z.object({
+const baseEventFields = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(200),
   description: z.string().min(10, "Description must be at least 10 characters"),
   summary: z.string().max(300).optional(),
@@ -19,7 +19,9 @@ export const createEventSchema = z.object({
   isFree: z.boolean().default(true),
   categoryIds: z.array(z.string()).min(1, "Select at least one category"),
   tagNames: z.array(z.string()).optional(),
-}).refine((data) => {
+})
+
+export const createEventSchema = baseEventFields.refine((data) => {
   const start = new Date(data.startDate)
   const end = new Date(data.endDate)
   return end > start
@@ -28,7 +30,7 @@ export const createEventSchema = z.object({
   path: ["endDate"],
 })
 
-export const updateEventSchema = createEventSchema.partial()
+export const updateEventSchema = baseEventFields.partial()
 
 export type CreateEventInput = z.infer<typeof createEventSchema>
 export type UpdateEventInput = z.infer<typeof updateEventSchema>

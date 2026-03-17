@@ -47,12 +47,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
     async jwt({ token, user }) {
+      // When user first signs in, store role from the authorize return
       if (user) {
         token.role = (user as Record<string, unknown>).role
       }
-      if (!token.role) {
+      // Always refresh role from DB to pick up role changes
+      if (token.sub) {
         const dbUser = await db.user.findUnique({
           where: { id: token.sub },
+          select: { role: true },
         })
         if (dbUser) {
           token.role = dbUser.role

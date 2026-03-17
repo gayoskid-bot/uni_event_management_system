@@ -88,6 +88,59 @@ export async function resolveReport(reportId: string) {
   return { success: true }
 }
 
+export async function approveEvent(eventId: string) {
+  await requireAdmin()
+  await db.event.update({
+    where: { id: eventId },
+    data: { status: "PUBLISHED", publishedAt: new Date() },
+  })
+  revalidatePath("/admin/events")
+  return { success: true }
+}
+
+export async function rejectEvent(eventId: string) {
+  await requireAdmin()
+  await db.event.update({
+    where: { id: eventId },
+    data: { status: "CANCELLED" },
+  })
+  revalidatePath("/admin/events")
+  return { success: true }
+}
+
+export async function archiveEvent(eventId: string) {
+  await requireAdmin()
+  await db.event.update({
+    where: { id: eventId },
+    data: { status: "COMPLETED" },
+  })
+  revalidatePath("/admin/events")
+  return { success: true }
+}
+
+export async function restoreEvent(eventId: string) {
+  await requireAdmin()
+  await db.event.update({
+    where: { id: eventId },
+    data: { status: "PUBLISHED" },
+  })
+  revalidatePath("/admin/events")
+  return { success: true }
+}
+
+export async function archiveExpiredEvents() {
+  await requireAdmin()
+  const result = await db.event.updateMany({
+    where: {
+      endDate: { lt: new Date() },
+      status: { in: ["PUBLISHED", "DRAFT"] },
+    },
+    data: { status: "COMPLETED" },
+  })
+  revalidatePath("/admin/events")
+  return { success: true, count: result.count }
+}
+
 export async function deleteEventAdmin(eventId: string) {
   await requireAdmin()
   await db.event.delete({ where: { id: eventId } })
