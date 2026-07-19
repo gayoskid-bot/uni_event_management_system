@@ -250,7 +250,7 @@ export default async function UserDashboard() {
                               className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                               style={{
                                 backgroundColor: ec.category.color + "20",
-                                color: ec.category.color,
+                                color: ec.category.color ?? undefined,
                               }}
                             >
                               {ec.category.name}

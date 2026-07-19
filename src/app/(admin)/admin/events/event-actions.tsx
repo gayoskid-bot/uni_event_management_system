@@ -20,7 +20,7 @@ export function ApproveButton({ eventId }: { eventId: string }) {
       variant="outline"
       className="h-7 text-xs gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
       disabled={pending}
-      onClick={() => startTransition(() => approveEvent(eventId))}
+      onClick={() => startTransition(async () => { await approveEvent(eventId) })}
     >
       <Check className="h-3 w-3" />
       Approve
@@ -36,7 +36,7 @@ export function RejectButton({ eventId }: { eventId: string }) {
       variant="outline"
       className="h-7 text-xs gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
       disabled={pending}
-      onClick={() => startTransition(() => rejectEvent(eventId))}
+      onClick={() => startTransition(async () => { await rejectEvent(eventId) })}
     >
       <X className="h-3 w-3" />
       Reject
@@ -52,7 +52,7 @@ export function ArchiveButton({ eventId }: { eventId: string }) {
       variant="outline"
       className="h-7 text-xs gap-1"
       disabled={pending}
-      onClick={() => startTransition(() => archiveEvent(eventId))}
+      onClick={() => startTransition(async () => { await archiveEvent(eventId) })}
     >
       <Archive className="h-3 w-3" />
       Archive
@@ -68,7 +68,7 @@ export function RestoreButton({ eventId }: { eventId: string }) {
       variant="outline"
       className="h-7 text-xs gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
       disabled={pending}
-      onClick={() => startTransition(() => restoreEvent(eventId))}
+      onClick={() => startTransition(async () => { await restoreEvent(eventId) })}
     >
       <RotateCcw className="h-3 w-3" />
       Restore
@@ -86,7 +86,7 @@ export function DeleteButton({ eventId }: { eventId: string }) {
       disabled={pending}
       onClick={() => {
         if (confirm("Are you sure you want to permanently delete this event?")) {
-          startTransition(() => deleteEventAdmin(eventId))
+          startTransition(async () => { await deleteEventAdmin(eventId) })
         }
       }}
     >
@@ -104,7 +104,7 @@ export function ArchiveExpiredButton() {
       variant="outline"
       className="gap-1"
       disabled={pending}
-      onClick={() => startTransition(() => archiveExpiredEvents())}
+      onClick={() => startTransition(async () => { await archiveExpiredEvents() })}
     >
       <Clock className="h-4 w-4" />
       {pending ? "Archiving..." : "Archive Expired Events"}
