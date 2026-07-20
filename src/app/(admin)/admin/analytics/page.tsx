@@ -30,6 +30,7 @@ export default async function AdminAnalyticsPage() {
     usersByRole,
     eventsByStatus,
     recentUsers,
+    revenue,
     registrationsByDay,
   ] = await Promise.all([
     db.user.count(),
@@ -39,6 +40,10 @@ export default async function AdminAnalyticsPage() {
     db.event.groupBy({ by: ["status"], _count: true }),
     db.user.count({
       where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+    }),
+    db.payment.aggregate({
+      where: { status: "COMPLETED" },
+      _sum: { amount: true },
     }),
     db.$queryRaw<DailyCount[]>`
       SELECT date_trunc('day', "registeredAt") AS day, COUNT(*)::bigint AS count
@@ -81,7 +86,7 @@ export default async function AdminAnalyticsPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Platform Analytics</h1>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{totalUsers}</div>
@@ -104,6 +109,12 @@ export default async function AdminAnalyticsPage() {
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-bold">{recentUsers}</div>
             <div className="text-xs text-muted-foreground">New Users (30d)</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-3xl font-bold">${(revenue._sum.amount ?? 0).toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Total Revenue</div>
           </CardContent>
         </Card>
       </div>
