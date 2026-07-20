@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { register, loginWithGoogle } from "@/server/actions/auth.actions"
+import { registerSchema } from "@/lib/validations/auth.schema"
 import { Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
@@ -23,6 +24,18 @@ export default function RegisterPage() {
       return await register(formData)
     },
     undefined
+  )
+
+  const [fields, setFields] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
+
+  const isValid = useMemo(
+    () => registerSchema.safeParse(fields).success,
+    [fields]
   )
 
   return (
@@ -82,6 +95,8 @@ export default function RegisterPage() {
               name="name"
               type="text"
               placeholder="John Doe"
+              value={fields.name}
+              onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
               required
             />
           </div>
@@ -92,6 +107,8 @@ export default function RegisterPage() {
               name="email"
               type="email"
               placeholder="you@university.edu"
+              value={fields.email}
+              onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
               required
             />
           </div>
@@ -101,7 +118,9 @@ export default function RegisterPage() {
               id="password"
               name="password"
               type="password"
-              placeholder="Min 8 characters"
+              placeholder="Min 8 characters, upper + lower + number"
+              value={fields.password}
+              onChange={(e) => setFields((f) => ({ ...f, password: e.target.value }))}
               required
             />
           </div>
@@ -112,10 +131,12 @@ export default function RegisterPage() {
               name="confirmPassword"
               type="password"
               placeholder="Confirm your password"
+              value={fields.confirmPassword}
+              onChange={(e) => setFields((f) => ({ ...f, confirmPassword: e.target.value }))}
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !isValid}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>

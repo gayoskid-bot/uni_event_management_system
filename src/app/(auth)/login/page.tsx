@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { login, loginWithGoogle } from "@/server/actions/auth.actions"
+import { loginSchema } from "@/lib/validations/auth.schema"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
@@ -24,6 +25,10 @@ export default function LoginPage() {
     },
     undefined
   )
+
+  const [fields, setFields] = useState({ email: "", password: "" })
+
+  const isValid = useMemo(() => loginSchema.safeParse(fields).success, [fields])
 
   return (
     <Card>
@@ -80,6 +85,8 @@ export default function LoginPage() {
               name="email"
               type="email"
               placeholder="you@university.edu"
+              value={fields.email}
+              onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
               required
             />
           </div>
@@ -98,10 +105,12 @@ export default function LoginPage() {
               name="password"
               type="password"
               placeholder="Enter your password"
+              value={fields.password}
+              onChange={(e) => setFields((f) => ({ ...f, password: e.target.value }))}
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" disabled={isPending || !isValid}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
