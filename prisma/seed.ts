@@ -49,6 +49,7 @@ async function main() {
       role: "ADMIN",
       bio: "Platform administrator",
       department: "IT",
+      onboardingCompletedAt: new Date(),
     },
   })
   console.log(`Created admin user: ${admin.email}`)
@@ -65,6 +66,7 @@ async function main() {
       role: "ORGANIZER",
       bio: "Student activities coordinator",
       department: "Student Affairs",
+      onboardingCompletedAt: new Date(),
     },
   })
   console.log(`Created organizer user: ${organizer.email}`)
@@ -82,6 +84,7 @@ async function main() {
       bio: "Computer Science major",
       department: "Computer Science",
       year: 3,
+      onboardingCompletedAt: new Date(),
     },
   })
   console.log(`Created student user: ${student.email}`)

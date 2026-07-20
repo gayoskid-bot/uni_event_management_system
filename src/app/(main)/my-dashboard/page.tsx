@@ -17,6 +17,7 @@ import {
   CalendarCheck,
   TrendingUp,
   Bell,
+  Megaphone,
 } from "lucide-react"
 import { formatDateTime } from "@/lib/utils"
 
@@ -298,6 +299,14 @@ export default async function UserDashboard() {
                   Edit Profile
                 </Button>
               </Link>
+              {session.user.role === "STUDENT" && (
+                <Link href="/apply-organizer" className="block">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <Megaphone className="h-4 w-4" />
+                    Apply as Organizer
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
 

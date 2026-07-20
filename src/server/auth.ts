@@ -45,6 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as string
         session.user.name = (token.name as string | null) ?? null
         session.user.image = (token.picture as string | null) ?? null
+        session.user.onboardingCompleted = Boolean(token.onboardingCompleted)
       }
       return session
     },
@@ -53,17 +54,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = (user as Record<string, unknown>).role
       }
-      // Always refresh role/name/image from DB so profile edits (e.g. a new
-      // avatar upload) show up immediately without requiring a re-login
+      // Always refresh role/name/image/onboarding status from DB so profile
+      // edits (e.g. a new avatar upload, finishing onboarding) show up
+      // immediately without requiring a re-login
       if (token.sub) {
         const dbUser = await db.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, name: true, image: true },
+          select: { role: true, name: true, image: true, onboardingCompletedAt: true },
         })
         if (dbUser) {
           token.role = dbUser.role
           token.name = dbUser.name
           token.picture = dbUser.image
+          token.onboardingCompleted = dbUser.onboardingCompletedAt !== null
         }
       }
       return token

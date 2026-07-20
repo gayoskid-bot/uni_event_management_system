@@ -24,6 +24,7 @@ export default {
       if (token.sub && session.user) {
         session.user.id = token.sub
         session.user.role = token.role as string
+        session.user.onboardingCompleted = Boolean(token.onboardingCompleted)
       }
       return session
     },

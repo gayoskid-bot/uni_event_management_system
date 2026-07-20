@@ -8,6 +8,7 @@ const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-passwor
 const authRoutes = ["/login", "/register"]
 const organizerRoutes = ["/dashboard"]
 const adminRoutes = ["/admin"]
+const onboardingRoute = "/onboarding"
 
 export default auth((req) => {
   const { nextUrl } = req
@@ -18,6 +19,7 @@ export default auth((req) => {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
   const isOrganizerRoute = organizerRoutes.some((route) => pathname.startsWith(route))
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route))
+  const isOnboardingRoute = pathname.startsWith(onboardingRoute)
   const isApiRoute = pathname.startsWith("/api")
 
   // Allow API routes
@@ -34,6 +36,20 @@ export default auth((req) => {
     return NextResponse.redirect(
       new URL(`/login?callbackUrl=${callbackUrl}`, nextUrl)
     )
+  }
+
+  // Send logged-in users who haven't finished onboarding there first,
+  // regardless of which page they're trying to reach
+  if (isLoggedIn && !isOnboardingRoute && !isPublicRoute) {
+    const onboardingCompleted = req.auth?.user?.onboardingCompleted
+    if (!onboardingCompleted) {
+      return NextResponse.redirect(new URL(onboardingRoute, nextUrl))
+    }
+  }
+
+  // Once onboarding is done, don't let them revisit the onboarding flow
+  if (isLoggedIn && isOnboardingRoute && req.auth?.user?.onboardingCompleted) {
+    return NextResponse.redirect(new URL("/my-dashboard", nextUrl))
   }
 
   // Check organizer routes
