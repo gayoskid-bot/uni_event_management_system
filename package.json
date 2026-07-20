@@ -36,6 +36,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
+    "recharts": "^3.9.2",
     "resend": "^6.9.3",
     "shadcn": "^4.0.8",
     "slugify": "^1.6.8",

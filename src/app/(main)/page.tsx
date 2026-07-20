@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, Search, Users, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EventGrid } from "@/components/events/event-grid"
+import { CategoryIcon } from "@/components/categories/category-icon"
 import { getUpcomingEvents, getTrendingEvents, getCategories } from "@/server/queries/events.queries"
 
 export default async function HomePage() {
@@ -82,20 +83,11 @@ export default async function HomePage() {
                 className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
                 style={{ backgroundColor: `${category.color}20` }}
               >
-                <span style={{ color: category.color || undefined }} className="text-lg">
-                  {category.icon === "GraduationCap" && "🎓"}
-                  {category.icon === "Users" && "👥"}
-                  {category.icon === "Trophy" && "🏆"}
-                  {category.icon === "Music" && "🎵"}
-                  {category.icon === "Briefcase" && "💼"}
-                  {category.icon === "Wrench" && "🔧"}
-                  {category.icon === "Presentation" && "📊"}
-                  {category.icon === "Handshake" && "🤝"}
-                  {category.icon === "Heart" && "❤️"}
-                  {category.icon === "Flag" && "🚩"}
-                  {category.icon === "Laptop" && "💻"}
-                  {category.icon === "HeartPulse" && "🏥"}
-                </span>
+                <CategoryIcon
+                  name={category.icon}
+                  className="h-5 w-5"
+                  style={{ color: category.color || undefined }}
+                />
               </div>
               <span className="text-sm font-medium">{category.name}</span>
               <span className="text-xs text-muted-foreground">

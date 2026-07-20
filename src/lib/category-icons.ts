@@ -1,0 +1,86 @@
+import {
+  GraduationCap,
+  Users,
+  Trophy,
+  Music,
+  Briefcase,
+  Wrench,
+  Presentation,
+  Handshake,
+  Heart,
+  Flag,
+  Laptop,
+  HeartPulse,
+  BookOpen,
+  Calendar,
+  Camera,
+  Coffee,
+  Palette,
+  Mic,
+  Film,
+  Gamepad2,
+  Globe,
+  Award,
+  Star,
+  Rocket,
+  Utensils,
+  Dumbbell,
+  Theater,
+  PartyPopper,
+  Lightbulb,
+  School,
+  Building2,
+  MapPin,
+  Megaphone,
+  Ticket,
+  Tag,
+  type LucideIcon,
+} from "lucide-react"
+
+export const CATEGORY_ICONS = {
+  GraduationCap,
+  Users,
+  Trophy,
+  Music,
+  Briefcase,
+  Wrench,
+  Presentation,
+  Handshake,
+  Heart,
+  Flag,
+  Laptop,
+  HeartPulse,
+  BookOpen,
+  Calendar,
+  Camera,
+  Coffee,
+  Palette,
+  Mic,
+  Film,
+  Gamepad2,
+  Globe,
+  Award,
+  Star,
+  Rocket,
+  Utensils,
+  Dumbbell,
+  Theater,
+  PartyPopper,
+  Lightbulb,
+  School,
+  Building2,
+  MapPin,
+  Megaphone,
+  Ticket,
+} satisfies Record<string, LucideIcon>
+
+export type CategoryIconName = keyof typeof CATEGORY_ICONS
+
+export const CATEGORY_ICON_NAMES = Object.keys(CATEGORY_ICONS) as CategoryIconName[]
+
+export const DEFAULT_CATEGORY_ICON: LucideIcon = Tag
+
+export function getCategoryIcon(name: string | null | undefined): LucideIcon {
+  if (!name) return DEFAULT_CATEGORY_ICON
+  return CATEGORY_ICONS[name as CategoryIconName] ?? DEFAULT_CATEGORY_ICON
+}

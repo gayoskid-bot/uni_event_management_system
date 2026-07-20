@@ -1,7 +1,26 @@
 import { db } from "@/server/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CategoryBarChart, RegistrationsTrendChart } from "@/components/admin/analytics-charts"
 
 export const metadata = { title: "Platform Analytics" }
+
+const ROLE_ORDER = ["STUDENT", "ORGANIZER", "ADMIN"] as const
+const STATUS_ORDER = ["DRAFT", "PUBLISHED", "CANCELLED", "COMPLETED"] as const
+
+const ROLE_LABELS: Record<string, string> = {
+  STUDENT: "Student",
+  ORGANIZER: "Organizer",
+  ADMIN: "Admin",
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Draft",
+  PUBLISHED: "Published",
+  CANCELLED: "Cancelled",
+  COMPLETED: "Completed",
+}
+
+type DailyCount = { day: Date; count: bigint }
 
 export default async function AdminAnalyticsPage() {
   const [
@@ -11,6 +30,7 @@ export default async function AdminAnalyticsPage() {
     usersByRole,
     eventsByStatus,
     recentUsers,
+    registrationsByDay,
   ] = await Promise.all([
     db.user.count(),
     db.event.count(),
@@ -20,7 +40,42 @@ export default async function AdminAnalyticsPage() {
     db.user.count({
       where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
     }),
+    db.$queryRaw<DailyCount[]>`
+      SELECT date_trunc('day', "registeredAt") AS day, COUNT(*)::bigint AS count
+      FROM "Registration"
+      WHERE "registeredAt" >= NOW() - INTERVAL '14 days'
+      GROUP BY day
+      ORDER BY day ASC
+    `,
   ])
+
+  const usersByRoleData = ROLE_ORDER.filter((role) => usersByRole.some((g) => g.role === role)).map(
+    (role) => ({
+      label: ROLE_LABELS[role],
+      value: usersByRole.find((g) => g.role === role)?._count ?? 0,
+    })
+  )
+
+  const eventsByStatusData = STATUS_ORDER.filter((status) =>
+    eventsByStatus.some((g) => g.status === status)
+  ).map((status) => ({
+    label: STATUS_LABELS[status],
+    value: eventsByStatus.find((g) => g.status === status)?._count ?? 0,
+  }))
+
+  // Fill in every day of the last 14 days, even ones with zero registrations,
+  // so the trend line doesn't silently skip gaps.
+  const registrationsByDayMap = new Map(
+    registrationsByDay.map((row) => [row.day.toISOString().slice(0, 10), Number(row.count)])
+  )
+  const registrationsTrendData = Array.from({ length: 14 }).map((_, i) => {
+    const date = new Date(Date.now() - (13 - i) * 24 * 60 * 60 * 1000)
+    const key = date.toISOString().slice(0, 10)
+    return {
+      label: date.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+      value: registrationsByDayMap.get(key) ?? 0,
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -53,28 +108,26 @@ export default async function AdminAnalyticsPage() {
         </Card>
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Registrations, Last 14 Days</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RegistrationsTrendChart data={registrationsTrendData} />
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Users by Role</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {usersByRole.map((group) => (
-                <div key={group.role} className="flex items-center justify-between">
-                  <span className="text-sm">{group.role}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary rounded-full h-2"
-                        style={{ width: `${(group._count / totalUsers) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium w-8 text-right">{group._count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {usersByRoleData.length > 0 ? (
+              <CategoryBarChart data={usersByRoleData} />
+            ) : (
+              <p className="text-sm text-muted-foreground">No users yet.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -83,22 +136,11 @@ export default async function AdminAnalyticsPage() {
             <CardTitle>Events by Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {eventsByStatus.map((group) => (
-                <div key={group.status} className="flex items-center justify-between">
-                  <span className="text-sm">{group.status}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary rounded-full h-2"
-                        style={{ width: `${totalEvents > 0 ? (group._count / totalEvents) * 100 : 0}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium w-8 text-right">{group._count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {eventsByStatusData.length > 0 ? (
+              <CategoryBarChart data={eventsByStatusData} />
+            ) : (
+              <p className="text-sm text-muted-foreground">No events yet.</p>
+            )}
           </CardContent>
         </Card>
       </div>
