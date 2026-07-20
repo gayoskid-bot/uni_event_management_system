@@ -12,6 +12,7 @@ const profileSchema = z.object({
   department: z.string().optional(),
   year: z.number().int().min(1).max(8).optional(),
   phone: z.string().optional(),
+  image: z.string().url().optional().or(z.literal("")),
 })
 
 export async function updateProfile(formData: FormData) {
@@ -24,6 +25,7 @@ export async function updateProfile(formData: FormData) {
     department: formData.get("department") || undefined,
     year: formData.get("year") ? Number(formData.get("year")) : undefined,
     phone: formData.get("phone") || undefined,
+    image: formData.get("image") || undefined,
   })
 
   if (!validated.success) return { error: validated.error.issues[0].message }

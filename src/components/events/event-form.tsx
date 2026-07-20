@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ImageUploadField } from "@/components/ui/image-upload-field"
 import { createEvent, updateEvent } from "@/server/actions/event.actions"
 import { Loader2 } from "lucide-react"
 import type { Category, Event } from "@prisma/client"
@@ -77,16 +78,12 @@ export function EventForm({ categories, event }: EventFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="coverImage">Cover Image URL</Label>
-            <Input
-              id="coverImage"
-              name="coverImage"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              defaultValue={event?.coverImage || ""}
-            />
-          </div>
+          <ImageUploadField
+            name="coverImage"
+            label="Cover Image"
+            defaultValue={event?.coverImage}
+            folder="events"
+          />
         </CardContent>
       </Card>
 
