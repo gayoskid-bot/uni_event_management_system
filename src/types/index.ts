@@ -42,6 +42,7 @@ export type EventCardData = Pick<
   | "isFree"
   | "capacity"
   | "status"
+  | "createdAt"
 > & {
   organizer: Pick<User, "id" | "name" | "image">
   categories: {

@@ -14,6 +14,7 @@ const eventCardSelect = {
   isFree: true,
   capacity: true,
   status: true,
+  createdAt: true,
   organizer: {
     select: { id: true, name: true, image: true },
   },
@@ -81,7 +82,7 @@ export async function getEvents({
     db.event.findMany({
       where,
       select: eventCardSelect,
-      orderBy: { startDate: "asc" },
+      orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
     }),
@@ -144,7 +145,7 @@ export async function getUpcomingEvents(limit = 6) {
       startDate: { gte: new Date() },
     },
     select: eventCardSelect,
-    orderBy: { startDate: "asc" },
+    orderBy: { createdAt: "desc" },
     take: limit,
   })
 }

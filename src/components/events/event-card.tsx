@@ -10,10 +10,13 @@ interface EventCardProps {
   event: EventCardData
 }
 
+const NEW_BADGE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000 // 3 days
+
 export function EventCard({ event }: EventCardProps) {
   const spotsLeft = event.capacity
     ? event.capacity - event._count.registrations
     : null
+  const isNew = Date.now() - new Date(event.createdAt).getTime() < NEW_BADGE_WINDOW_MS
 
   return (
     <Link href={`/events/${event.slug}`}>
@@ -35,6 +38,11 @@ export function EventCard({ event }: EventCardProps) {
           )}
           {/* Category Badges */}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            {isNew && (
+              <Badge className="text-[10px] bg-emerald-600 text-white hover:bg-emerald-600">
+                New
+              </Badge>
+            )}
             {event.categories.slice(0, 2).map(({ category }) => (
               <Badge
                 key={category.id}
