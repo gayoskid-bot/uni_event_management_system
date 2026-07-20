@@ -93,6 +93,7 @@ function EventRegistrationCard({
     isOnline: boolean
     registrationStatus: string
     qrCode: string | null
+    registrationId: string
   }
 }) {
   const statusColors: Record<string, string> = {
@@ -148,12 +149,16 @@ function EventRegistrationCard({
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
-            {event.qrCode && (
-              <Badge variant="outline" className="text-[10px] gap-1">
-                <QrCode className="h-3 w-3" />
-                QR: {event.qrCode.slice(0, 8)}...
-              </Badge>
-            )}
+            {event.qrCode &&
+              (event.registrationStatus === "CONFIRMED" ||
+                event.registrationStatus === "CHECKED_IN") && (
+                <Link href={`/my-events/${event.registrationId}/ticket`}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+                    <QrCode className="h-3 w-3" />
+                    View Ticket
+                  </Button>
+                </Link>
+              )}
             <Link href={`/events/${event.slug}`}>
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
                 <ExternalLink className="h-3 w-3" />
