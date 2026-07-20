@@ -1,7 +1,7 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { auth } from "@/server/auth"
+import { auth, updateSession } from "@/server/auth"
 import { db } from "@/server/db"
 import { z } from "zod"
 
@@ -53,6 +53,12 @@ export async function completeOnboarding(
       })),
     }),
   ])
+
+  // Force the session/JWT cookie to refresh with the new onboardingCompleted
+  // claim before redirecting — middleware only reads the cookie (it can't
+  // query the DB), so without this it would still see the stale pre-onboarding
+  // token and immediately bounce back here, causing a redirect loop.
+  await updateSession({})
 
   redirect("/my-dashboard")
 }
