@@ -1,6 +1,6 @@
 import { db } from "@/server/db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CategoryBarChart, RegistrationsTrendChart } from "@/components/admin/analytics-charts"
+import { CategoryBarChart, RegistrationsTrendChart } from "@/components/analytics/charts"
 
 export const metadata = { title: "Platform Analytics" }
 
