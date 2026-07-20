@@ -12,6 +12,7 @@ import {
   BarChart3,
   ChevronLeft,
 } from "lucide-react"
+import { SidebarNav } from "@/components/layout/sidebar-nav"
 
 export default async function AdminLayout({
   children,
@@ -40,18 +41,7 @@ export default async function AdminLayout({
           <Shield className="h-6 w-6 text-primary" />
           <span className="font-bold">Admin Panel</span>
         </div>
-        <nav className="flex-1 space-y-1 p-4">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-            >
-              <link.icon className="h-4 w-4" />
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        <SidebarNav links={links} />
         <div className="border-t p-4">
           <Link
             href="/"
