@@ -16,7 +16,10 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { register, loginWithGoogle } from "@/server/actions/auth.actions"
 import { registerSchema } from "@/lib/validations/auth.schema"
+import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
+
+type FieldName = "name" | "email" | "password" | "confirmPassword"
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(
@@ -32,11 +35,33 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   })
+  const [touched, setTouched] = useState<Record<FieldName, boolean>>({
+    name: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  })
 
-  const isValid = useMemo(
-    () => registerSchema.safeParse(fields).success,
-    [fields]
-  )
+  const validation = useMemo(() => registerSchema.safeParse(fields), [fields])
+  const fieldErrors = validation.success
+    ? {}
+    : validation.error.flatten().fieldErrors
+
+  function markTouched(name: FieldName) {
+    setTouched((t) => ({ ...t, [name]: true }))
+  }
+
+  function errorsFor(name: FieldName): string[] {
+    if (!touched[name]) return []
+    return fieldErrors[name] ?? []
+  }
+
+  function inputClass(name: FieldName) {
+    return cn(
+      errorsFor(name).length > 0 &&
+        "border-destructive focus-visible:ring-destructive"
+    )
+  }
 
   return (
     <Card>
@@ -97,8 +122,13 @@ export default function RegisterPage() {
               placeholder="John Doe"
               value={fields.name}
               onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
+              onBlur={() => markTouched("name")}
+              className={inputClass("name")}
               required
             />
+            {errorsFor("name").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -109,8 +139,13 @@ export default function RegisterPage() {
               placeholder="you@university.edu"
               value={fields.email}
               onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
+              onBlur={() => markTouched("email")}
+              className={inputClass("email")}
               required
             />
+            {errorsFor("email").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -121,8 +156,13 @@ export default function RegisterPage() {
               placeholder="Min 8 characters, upper + lower + number"
               value={fields.password}
               onChange={(e) => setFields((f) => ({ ...f, password: e.target.value }))}
+              onBlur={() => markTouched("password")}
+              className={inputClass("password")}
               required
             />
+            {errorsFor("password").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -133,10 +173,15 @@ export default function RegisterPage() {
               placeholder="Confirm your password"
               value={fields.confirmPassword}
               onChange={(e) => setFields((f) => ({ ...f, confirmPassword: e.target.value }))}
+              onBlur={() => markTouched("confirmPassword")}
+              className={inputClass("confirmPassword")}
               required
             />
+            {errorsFor("confirmPassword").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
-          <Button type="submit" className="w-full" disabled={isPending || !isValid}>
+          <Button type="submit" className="w-full" disabled={isPending || !validation.success}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Account
           </Button>

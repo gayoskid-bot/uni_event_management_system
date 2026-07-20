@@ -16,7 +16,10 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { login, loginWithGoogle } from "@/server/actions/auth.actions"
 import { loginSchema } from "@/lib/validations/auth.schema"
+import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
+
+type FieldName = "email" | "password"
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(
@@ -27,8 +30,31 @@ export default function LoginPage() {
   )
 
   const [fields, setFields] = useState({ email: "", password: "" })
+  const [touched, setTouched] = useState<Record<FieldName, boolean>>({
+    email: false,
+    password: false,
+  })
 
-  const isValid = useMemo(() => loginSchema.safeParse(fields).success, [fields])
+  const validation = useMemo(() => loginSchema.safeParse(fields), [fields])
+  const fieldErrors = validation.success
+    ? {}
+    : validation.error.flatten().fieldErrors
+
+  function markTouched(name: FieldName) {
+    setTouched((t) => ({ ...t, [name]: true }))
+  }
+
+  function errorsFor(name: FieldName): string[] {
+    if (!touched[name]) return []
+    return fieldErrors[name] ?? []
+  }
+
+  function inputClass(name: FieldName) {
+    return cn(
+      errorsFor(name).length > 0 &&
+        "border-destructive focus-visible:ring-destructive"
+    )
+  }
 
   return (
     <Card>
@@ -87,8 +113,13 @@ export default function LoginPage() {
               placeholder="you@university.edu"
               value={fields.email}
               onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
+              onBlur={() => markTouched("email")}
+              className={inputClass("email")}
               required
             />
+            {errorsFor("email").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -107,10 +138,15 @@ export default function LoginPage() {
               placeholder="Enter your password"
               value={fields.password}
               onChange={(e) => setFields((f) => ({ ...f, password: e.target.value }))}
+              onBlur={() => markTouched("password")}
+              className={inputClass("password")}
               required
             />
+            {errorsFor("password").map((msg) => (
+              <p key={msg} className="text-xs text-destructive">{msg}</p>
+            ))}
           </div>
-          <Button type="submit" className="w-full" disabled={isPending || !isValid}>
+          <Button type="submit" className="w-full" disabled={isPending || !validation.success}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
