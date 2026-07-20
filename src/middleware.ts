@@ -39,17 +39,17 @@ export default auth((req) => {
   }
 
   // Send logged-in users who haven't finished onboarding there first,
-  // regardless of which page they're trying to reach
+  // regardless of which page they're trying to reach. Deliberately one-way:
+  // this never redirects *away* from /onboarding on the middleware side —
+  // that decision is left entirely to the page itself (which reads the DB
+  // directly). If both middleware and the page could redirect based on their
+  // own, possibly-briefly-disagreeing view of "is onboarding done", a stale
+  // session cookie could bounce the user back and forth forever.
   if (isLoggedIn && !isOnboardingRoute && !isPublicRoute) {
     const onboardingCompleted = req.auth?.user?.onboardingCompleted
     if (!onboardingCompleted) {
       return NextResponse.redirect(new URL(onboardingRoute, nextUrl))
     }
-  }
-
-  // Once onboarding is done, don't let them revisit the onboarding flow
-  if (isLoggedIn && isOnboardingRoute && req.auth?.user?.onboardingCompleted) {
-    return NextResponse.redirect(new URL("/my-dashboard", nextUrl))
   }
 
   // Check organizer routes
