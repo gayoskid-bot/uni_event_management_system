@@ -73,7 +73,7 @@ export default async function OrganizerEventsPage() {
                         {event.title}
                       </Link>
                       <Badge className={`shrink-0 text-[10px] ${statusColors[event.status]}`}>
-                        {event.status}
+                        {event.status === "DRAFT" ? "Pending Admin Approval" : event.status}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">

@@ -135,15 +135,18 @@ export async function updateEvent(eventId: string, formData: FormData) {
   redirect(`/events/${event.slug}`)
 }
 
+// Publishing is admin-only: every organizer-created event starts as DRAFT
+// and sits in the admin "Pending Review" queue (see /admin/events) until an
+// admin approves it. Organizers cannot self-publish, even for their own
+// events — that would bypass moderation entirely.
 export async function publishEvent(eventId: string) {
   const session = await auth()
-  if (!session?.user) return { error: "Unauthorized" }
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return { error: "Only administrators can publish events" }
+  }
 
   const event = await db.event.findUnique({ where: { id: eventId } })
   if (!event) return { error: "Event not found" }
-  if (event.organizerId !== session.user.id && session.user.role !== "ADMIN") {
-    return { error: "Unauthorized" }
-  }
 
   await db.event.update({
     where: { id: eventId },
