@@ -34,7 +34,7 @@ export function AdminUserActions({ userId, role, isActive }: AdminUserActionsPro
   return (
     <div className="flex items-center gap-1 shrink-0">
       {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-      {role !== "ORGANIZER" && (
+      {role !== "ORGANIZER" && role !== "ADMIN" && (
         <Button
           variant="ghost"
           size="sm"
@@ -44,6 +44,18 @@ export function AdminUserActions({ userId, role, isActive }: AdminUserActionsPro
         >
           <UserCog className="h-3.5 w-3.5 mr-1" />
           Make Organizer
+        </Button>
+      )}
+      {role !== "ADMIN" && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+          onClick={() => handleRoleChange("ADMIN")}
+          disabled={isPending}
+        >
+          <Shield className="h-3.5 w-3.5 mr-1" />
+          Make Admin
         </Button>
       )}
       {role !== "STUDENT" && role !== "ADMIN" && (
