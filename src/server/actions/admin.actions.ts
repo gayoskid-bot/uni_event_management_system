@@ -14,7 +14,14 @@ async function requireAdmin() {
 
 export async function changeUserRole(userId: string, role: "STUDENT" | "ORGANIZER" | "ADMIN") {
   await requireAdmin()
-  await db.user.update({ where: { id: userId }, data: { role } })
+  await db.user.update({
+    where: { id: userId },
+    // Stamping sessionInvalidatedAt forces that user's current session to be
+    // rejected on their next request (see the jwt callback in auth.ts), so
+    // the new role takes effect immediately via a forced re-login instead of
+    // silently waiting for them to happen to refresh.
+    data: { role, sessionInvalidatedAt: new Date() },
+  })
   revalidatePath("/admin/users")
   return { success: true }
 }
@@ -26,7 +33,7 @@ export async function toggleUserActive(userId: string) {
 
   await db.user.update({
     where: { id: userId },
-    data: { isActive: !user.isActive },
+    data: { isActive: !user.isActive, sessionInvalidatedAt: new Date() },
   })
   revalidatePath("/admin/users")
   return { success: true, isActive: !user.isActive }
@@ -47,7 +54,7 @@ export async function approveOrganizerApplication(applicationId: string) {
 
   await db.user.update({
     where: { id: application.userId },
-    data: { role: "ORGANIZER" },
+    data: { role: "ORGANIZER", sessionInvalidatedAt: new Date() },
   })
 
   await db.notification.create({

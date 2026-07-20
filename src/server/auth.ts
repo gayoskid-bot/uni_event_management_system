@@ -60,14 +60,35 @@ export const { handlers, auth, signIn, signOut, unstable_update: updateSession }
       if (token.sub) {
         const dbUser = await db.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, name: true, image: true, onboardingCompletedAt: true },
+          select: {
+            role: true,
+            name: true,
+            image: true,
+            onboardingCompletedAt: true,
+            sessionInvalidatedAt: true,
+            isActive: true,
+          },
         })
-        if (dbUser) {
-          token.role = dbUser.role
-          token.name = dbUser.name
-          token.picture = dbUser.image
-          token.onboardingCompleted = dbUser.onboardingCompletedAt !== null
+
+        if (!dbUser || !dbUser.isActive) return null
+
+        // An admin action (role change, ban) stamps sessionInvalidatedAt.
+        // If this token was issued before that stamp, it's stale — reject
+        // it outright so the user is signed out and must log back in to
+        // pick up the change, rather than silently keeping their old
+        // permissions until the token's normal expiry.
+        if (
+          dbUser.sessionInvalidatedAt &&
+          typeof token.iat === "number" &&
+          dbUser.sessionInvalidatedAt.getTime() / 1000 > token.iat
+        ) {
+          return null
         }
+
+        token.role = dbUser.role
+        token.name = dbUser.name
+        token.picture = dbUser.image
+        token.onboardingCompleted = dbUser.onboardingCompletedAt !== null
       }
       return token
     },
