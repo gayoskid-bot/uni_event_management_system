@@ -23,6 +23,7 @@ export default async function AdminDashboard() {
     totalUsers,
     totalEvents,
     totalRegistrations,
+    pendingEvents,
     pendingApplications,
     pendingReports,
     activeOrganizers,
@@ -36,6 +37,7 @@ export default async function AdminDashboard() {
     db.user.count(),
     db.event.count(),
     db.registration.count(),
+    db.event.count({ where: { status: "DRAFT" } }),
     db.organizerApplication.count({ where: { status: "PENDING" } }),
     db.report.count({ where: { status: "PENDING" } }),
     db.user.count({ where: { role: "ORGANIZER" } }),
@@ -111,6 +113,16 @@ export default async function AdminDashboard() {
       icon: TrendingUp,
       color: "text-indigo-600 bg-indigo-50",
       href: "/admin/users",
+    },
+    {
+      label: "Events Awaiting Approval",
+      value: pendingEvents,
+      icon: CalendarDays,
+      color: pendingEvents > 0
+        ? "text-yellow-600 bg-yellow-50"
+        : "text-gray-600 bg-gray-50",
+      href: "/admin/events?tab=pending",
+      urgent: pendingEvents > 0,
     },
     {
       label: "Pending Applications",
