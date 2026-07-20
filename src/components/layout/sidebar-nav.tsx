@@ -2,13 +2,38 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import type { LucideIcon } from "lucide-react"
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  ClipboardCheck,
+  Flag,
+  Tag,
+  BarChart3,
+  CalendarPlus,
+  Settings,
+  type LucideIcon,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
+
+const SIDEBAR_ICONS = {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  ClipboardCheck,
+  Flag,
+  Tag,
+  BarChart3,
+  CalendarPlus,
+  Settings,
+} satisfies Record<string, LucideIcon>
+
+export type SidebarIconName = keyof typeof SIDEBAR_ICONS
 
 export type SidebarLink = {
   href: string
   label: string
-  icon: LucideIcon
+  icon: SidebarIconName
 }
 
 export function SidebarNav({ links }: { links: SidebarLink[] }) {
@@ -22,6 +47,8 @@ export function SidebarNav({ links }: { links: SidebarLink[] }) {
             ? pathname === link.href
             : pathname === link.href || pathname.startsWith(`${link.href}/`)
 
+        const Icon = SIDEBAR_ICONS[link.icon]
+
         return (
           <Link
             key={link.href}
@@ -34,7 +61,7 @@ export function SidebarNav({ links }: { links: SidebarLink[] }) {
                 : "text-sidebar-foreground hover:bg-sidebar-accent/60"
             )}
           >
-            <link.icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" />
             {link.label}
           </Link>
         )

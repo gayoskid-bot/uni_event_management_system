@@ -1,15 +1,8 @@
 import { auth } from "@/server/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import {
-  CalendarDays,
-  LayoutDashboard,
-  CalendarPlus,
-  BarChart3,
-  Settings,
-  ChevronLeft,
-} from "lucide-react"
-import { SidebarNav } from "@/components/layout/sidebar-nav"
+import { CalendarDays, ChevronLeft } from "lucide-react"
+import { SidebarNav, type SidebarLink } from "@/components/layout/sidebar-nav"
 
 export default async function OrganizerLayout({
   children,
@@ -26,11 +19,11 @@ export default async function OrganizerLayout({
     redirect("/")
   }
 
-  const sidebarLinks = [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/events", label: "My Events", icon: CalendarDays },
-    { href: "/dashboard/events/new", label: "Create Event", icon: CalendarPlus },
-    { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  const sidebarLinks: SidebarLink[] = [
+    { href: "/dashboard", label: "Overview", icon: "LayoutDashboard" },
+    { href: "/dashboard/events", label: "My Events", icon: "CalendarDays" },
+    { href: "/dashboard/events/new", label: "Create Event", icon: "CalendarPlus" },
+    { href: "/dashboard/analytics", label: "Analytics", icon: "BarChart3" },
   ]
 
   return (

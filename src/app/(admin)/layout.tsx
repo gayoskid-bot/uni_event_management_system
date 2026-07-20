@@ -1,18 +1,8 @@
 import { auth } from "@/server/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import {
-  Shield,
-  LayoutDashboard,
-  Users,
-  CalendarDays,
-  ClipboardCheck,
-  Flag,
-  Tag,
-  BarChart3,
-  ChevronLeft,
-} from "lucide-react"
-import { SidebarNav } from "@/components/layout/sidebar-nav"
+import { Shield, ChevronLeft } from "lucide-react"
+import { SidebarNav, type SidebarLink } from "@/components/layout/sidebar-nav"
 
 export default async function AdminLayout({
   children,
@@ -24,14 +14,14 @@ export default async function AdminLayout({
     redirect("/")
   }
 
-  const links = [
-    { href: "/admin", label: "Overview", icon: LayoutDashboard },
-    { href: "/admin/users", label: "Users", icon: Users },
-    { href: "/admin/events", label: "Events", icon: CalendarDays },
-    { href: "/admin/applications", label: "Applications", icon: ClipboardCheck },
-    { href: "/admin/reports", label: "Reports", icon: Flag },
-    { href: "/admin/categories", label: "Categories", icon: Tag },
-    { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  const links: SidebarLink[] = [
+    { href: "/admin", label: "Overview", icon: "LayoutDashboard" },
+    { href: "/admin/users", label: "Users", icon: "Users" },
+    { href: "/admin/events", label: "Events", icon: "CalendarDays" },
+    { href: "/admin/applications", label: "Applications", icon: "ClipboardCheck" },
+    { href: "/admin/reports", label: "Reports", icon: "Flag" },
+    { href: "/admin/categories", label: "Categories", icon: "Tag" },
+    { href: "/admin/analytics", label: "Analytics", icon: "BarChart3" },
   ]
 
   return (
